@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ class _ButterFlyAssetVideoInList extends StatelessWidget {
 
 /// A filler card to show the video in a list of scrolling contents.
 class _ExampleCard extends StatelessWidget {
-  const _ExampleCard({Key key, this.title}) : super(key: key);
+  const _ExampleCard({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -123,13 +123,13 @@ class _ExampleCard extends StatelessWidget {
           ),
           ButtonBar(
             children: <Widget>[
-              FlatButton(
+              TextButton(
                 child: const Text('BUY TICKETS'),
                 onPressed: () {
                   /* ... */
                 },
               ),
-              FlatButton(
+              TextButton(
                 child: const Text('SELL TICKETS'),
                 onPressed: () {
                   /* ... */
@@ -149,7 +149,7 @@ class _ButterFlyAssetVideo extends StatefulWidget {
 }
 
 class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
-  VideoPlayerController _controller;
+  late VideoPlayerController _controller;
 
   @override
   void initState() {
@@ -205,12 +205,13 @@ class _BumbleBeeRemoteVideo extends StatefulWidget {
 }
 
 class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
-  VideoPlayerController _controller;
+  late VideoPlayerController _controller;
 
   Future<ClosedCaptionFile> _loadCaptions() async {
     final String fileContents = await DefaultAssetBundle.of(context)
-        .loadString('assets/bumble_bee_captions.srt');
-    return SubRipCaptionFile(fileContents);
+        .loadString('assets/bumble_bee_captions.vtt');
+    return WebVTTCaptionFile(
+        fileContents); // For vtt files, use WebVTTCaptionFile
   }
 
   @override
@@ -265,7 +266,8 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
 }
 
 class _ControlsOverlay extends StatelessWidget {
-  const _ControlsOverlay({Key key, this.controller}) : super(key: key);
+  const _ControlsOverlay({Key? key, required this.controller})
+      : super(key: key);
 
   static const _examplePlaybackRates = [
     0.25,
@@ -296,6 +298,7 @@ class _ControlsOverlay extends StatelessWidget {
                       Icons.play_arrow,
                       color: Colors.white,
                       size: 100.0,
+                      semanticLabel: 'Play',
                     ),
                   ),
                 ),
@@ -345,7 +348,7 @@ class _PlayerVideoAndPopPage extends StatefulWidget {
 }
 
 class _PlayerVideoAndPopPageState extends State<_PlayerVideoAndPopPage> {
-  VideoPlayerController _videoPlayerController;
+  late VideoPlayerController _videoPlayerController;
   bool startedPlaying = false;
 
   @override

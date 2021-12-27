@@ -11,12 +11,12 @@ flutter_export_environment.sh
 
 examples/all_plugins/pubspec.yaml
 
-Podfile
 Podfile.lock
 Pods/
 .symlinks/
 **/Flutter/App.framework/
 **/Flutter/ephemeral/
+**/Flutter/Flutter.podspec
 **/Flutter/Flutter.framework/
 **/Flutter/Generated.xcconfig
 **/Flutter/flutter_assets/
@@ -34,10 +34,12 @@ gradle-wrapper.jar
 .flutter-plugins-dependencies
 *.iml
 
+generated_plugin_registrant.cc
+generated_plugin_registrant.h
 generated_plugin_registrant.dart
+GeneratedPluginRegistrant.java
 GeneratedPluginRegistrant.h
 GeneratedPluginRegistrant.m
-GeneratedPluginRegistrant.java
 GeneratedPluginRegistrant.swift
 build/
 .flutter-plugins
@@ -45,3 +47,6 @@ build/
 .project
 .classpath
 .settings
+
+# Downloaded by the plugin tools.
+google-java-format-1.3-all-deps.jar

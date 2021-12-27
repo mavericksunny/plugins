@@ -1,6 +1,35 @@
-## 2.3.0
+## 5.0.0
 
-* Add caching functionality to videos from network sources.
+* **BREAKING CHANGES**:
+  * Updates to extending `PlatformInterface`. Removes `isMock`, in favor of the
+    now-standard `MockPlatformInterfaceMixin`.
+  * Removes test.dart from the public interface. Tests in other packages should
+    mock `VideoPlatformInterface` rather than the method channel.
+
+## 4.2.0
+
+* Add `contentUri` to `DataSourceType`.
+
+## 4.1.0
+
+* Add `httpHeaders` to `DataSource`
+
+## 4.0.0
+
+* **Breaking Changes**:
+  * Migrate to null-safety
+  * Update to latest Pigeon. This includes a breaking change to how the test logic is exposed.
+* Add note about the `mixWithOthers` option being ignored on the web.
+* Make DataSource's `uri` parameter nullable.
+* `messages.dart` sets Dart `2.12`.
+
+## 3.0.0
+
+* Version 3 only was published as nullsafety "previews".
+
+## 2.2.1
+
+* Update Flutter SDK constraint.
 
 ## 2.2.0
 
@@ -12,7 +41,7 @@
 
 ## 2.1.0
 
-* Add VideoPlayerOptions with audo mix mode
+* Add VideoPlayerOptions with audio mix mode
 
 ## 2.0.2
 

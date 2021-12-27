@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@ package io.flutter.plugins.videoplayer;
 
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
 import android.util.LongSparseArray;
-import io.flutter.embedding.engine.loader.FlutterLoader;
+import io.flutter.FlutterInjector;
+import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
@@ -24,6 +24,7 @@ import io.flutter.plugins.videoplayer.Messages.VolumeMessage;
 import io.flutter.view.TextureRegistry;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 /** Android platform implementation of the VideoPlayerPlugin. */
@@ -64,6 +65,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
 
   @Override
   public void onAttachedToEngine(FlutterPluginBinding binding) {
+
     if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
       try {
         HttpsURLConnection.setDefaultSSLSocketFactory(new CustomSSLSocketFactory());
@@ -77,14 +79,13 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
       }
     }
 
-    @SuppressWarnings("deprecation")
-    final FlutterLoader flutterLoader = FlutterLoader.getInstance();
+    final FlutterInjector injector = FlutterInjector.instance();
     this.flutterState =
         new FlutterState(
             binding.getApplicationContext(),
             binding.getBinaryMessenger(),
-            flutterLoader::getLookupKeyForAsset,
-            flutterLoader::getLookupKeyForAsset,
+            injector.flutterLoader()::getLookupKeyForAsset,
+            injector.flutterLoader()::getLookupKeyForAsset,
             binding.getTextureRegistry());
     flutterState.startListening(this, binding.getBinaryMessenger());
   }
@@ -96,6 +97,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
     }
     flutterState.stopListening(binding.getBinaryMessenger());
     flutterState = null;
+    initialize(new InitializeMessage());
   }
 
   private void disposeAllPlayers() {
@@ -114,10 +116,10 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
     disposeAllPlayers();
   }
 
-  public void initialize(InitializeMessage arg) {
+  public void initialize(InitializeMessage args) {
     disposeAllPlayers();
-    maxCacheSize = arg.getMaxCacheSize();
-    maxCacheFileSize = arg.getMaxCacheFileSize();
+    maxCacheSize = 100 * 1024 * 1024;
+    maxCacheFileSize = 10 * 1024 * 1024;
   }
 
   public TextureMessage create(CreateMessage arg) {
@@ -146,9 +148,10 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               options,
               maxCacheSize,
               maxCacheFileSize,
-              false);
-      videoPlayers.put(handle.id(), player);
+              false, null);
     } else {
+      @SuppressWarnings("unchecked")
+      Map<String, String> httpHeaders = arg.getHttpHeaders();
       player =
           new VideoPlayer(
               flutterState.applicationContext,
@@ -159,9 +162,10 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               options,
               maxCacheSize,
               maxCacheFileSize,
-              arg.getUseCache());
-      videoPlayers.put(handle.id(), player);
+              arg.getUseCache(),
+              httpHeaders);
     }
+    videoPlayers.put(handle.id(), player);
 
     TextureMessage result = new TextureMessage();
     result.setTextureId(handle.id());

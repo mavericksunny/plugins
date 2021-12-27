@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import Foundation
 public class PathProviderPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(
-      name: "plugins.flutter.io/path_provider",
+      name: "plugins.flutter.io/path_provider_macos",
       binaryMessenger: registrar.messenger)
     let instance = PathProviderPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
@@ -25,16 +25,6 @@ public class PathProviderPlugin: NSObject, FlutterPlugin {
       if let basePath = path {
         let basePathURL = URL.init(fileURLWithPath: basePath)
         path = basePathURL.appendingPathComponent(Bundle.main.bundleIdentifier!).path
-        do {
-          try FileManager.default.createDirectory(atPath: path!, withIntermediateDirectories: true)
-        } catch {
-          result(
-            FlutterError(
-              code: "directory_creation_failure",
-              message: error.localizedDescription,
-              details: "\(error)"))
-          return
-        }
       }
       result(path)
     case "getLibraryDirectory":
