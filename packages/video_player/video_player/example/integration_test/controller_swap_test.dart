@@ -19,10 +19,11 @@ void main() {
     (WidgetTester tester) async {
       VideoPlayerController controller = VideoPlayerController.network(
         'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+        useCache: true,
       );
       VideoPlayerController another = VideoPlayerController.network(
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-      );
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+          useCache: true);
       await controller.initialize();
       await another.initialize();
       await controller.setVolume(0);

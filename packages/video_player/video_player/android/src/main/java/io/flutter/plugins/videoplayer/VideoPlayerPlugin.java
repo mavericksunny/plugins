@@ -34,8 +34,8 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
   private FlutterState flutterState;
   private VideoPlayerOptions options = new VideoPlayerOptions();
 
-  private long maxCacheSize;
-  private long maxCacheFileSize;
+  private int maxCacheSize;
+  private int maxCacheFileSize;
 
   /** Register this with the v2 embedding for the plugin to respond to lifecycle callbacks. */
   public VideoPlayerPlugin() {}
@@ -164,13 +164,136 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               maxCacheFileSize,
               arg.getUseCache(),
               httpHeaders);
+            }
+            videoPlayers.put(handle.id(), player);
+        
+            TextureMessage result = new TextureMessage();
+            result.setTextureId(handle.id());
+            return result;
+          }
+  @Override
+  public void onMethodCall(MethodCall call, Result result) {
+    if (flutterState == null || flutterState.textureRegistry == null) {
+      result.error("no_activity", "video_player plugin requires a foreground activity", null);
+      return;
     }
-    videoPlayers.put(handle.id(), player);
+    switch (call.method) {
+      case "init":
+        maxCacheSize = call.argument("maxCacheSize");
+        maxCacheFileSize = call.argument("maxCacheFileSize");
+        disposeAllPlayers();
+        result.success(null);
+        break;
+      case "create":
+        {
+          TextureRegistry.SurfaceTextureEntry handle =
+              flutterState.textureRegistry.createSurfaceTexture();
+          EventChannel eventChannel =
+              new EventChannel(
+                  flutterState.binaryMessenger, "flutter.io/videoPlayer/videoEvents" + handle.id());
 
-    TextureMessage result = new TextureMessage();
-    result.setTextureId(handle.id());
-    return result;
+          VideoPlayer player =
+              new VideoPlayer(
+                  flutterState.applicationContext,
+                  eventChannel,
+                  handle,
+                  maxCacheSize,
+                  maxCacheFileSize,
+                  result);
+
+          videoPlayers.put(handle.id(), player);
+          break;
+        }
+      default:
+        {
+          long textureId = ((Number) call.argument("textureId")).longValue();
+          VideoPlayer player = videoPlayers.get(textureId);
+          if (player == null) {
+            result.error(
+                "Unknown textureId",
+                "No video player associated with texture id " + textureId,
+                null);
+            return;
+          }
+          onMethodCall(call, result, textureId, player);
+          break;
+        }
+    }
   }
+
+  private void onMethodCall(MethodCall call, Result result, long textureId, VideoPlayer player) {
+    switch (call.method) {
+      case "setDataSource":
+        {
+          Map<String, Object> dataSource = call.argument("dataSource");
+          String key = (String) dataSource.get("key");
+          if (dataSource.get("asset") != null) {
+            String assetLookupKey;
+            if (dataSource.get("package") != null) {
+              assetLookupKey =
+                  flutterState.keyForAssetAndPackageName.get(
+                      (String) dataSource.get("asset"), (String) dataSource.get("package"));
+            } else {
+              assetLookupKey = flutterState.keyForAsset.get((String) dataSource.get("asset"));
+            }
+
+            player.setDataSource(
+                flutterState.applicationContext,
+                key,
+                "asset:///" + assetLookupKey,
+                null,
+                false,
+                result);
+          } else {
+            player.setDataSource(
+                flutterState.applicationContext,
+                key,
+                (String) dataSource.get("uri"),
+                (String) dataSource.get("formatHint"),
+                (Boolean) dataSource.get("useCache"),
+                result);
+          }
+          break;
+        }
+      case "setLooping":
+        player.setLooping(call.argument("looping"));
+        result.success(null);
+        break;
+      case "setVolume":
+        player.setVolume(call.argument("volume"));
+        result.success(null);
+        break;
+      case "setMuted":
+        player.setMuted(call.argument("muted"));
+        result.success(null);
+        break;
+      case "play":
+        player.play();
+        result.success(null);
+        break;
+      case "pause":
+        player.pause();
+        result.success(null);
+        break;
+      case "seekTo":
+        int location = ((Number) call.argument("location")).intValue();
+        player.seekTo(location);
+        result.success(null);
+        break;
+      case "position":
+        result.success(player.getPosition());
+        player.sendBufferingUpdate();
+        break;
+      case "dispose":
+        player.dispose();
+        videoPlayers.remove(textureId);
+        result.success(null);
+        break;
+      default:
+        result.notImplemented();
+        break;
+      }
+    }
 
   public void dispose(TextureMessage arg) {
     VideoPlayer player = videoPlayers.get(arg.getTextureId());

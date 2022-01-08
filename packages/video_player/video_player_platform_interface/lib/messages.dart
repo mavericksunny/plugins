@@ -10,6 +10,7 @@ import 'dart:async';
 import 'dart:typed_data' show Uint8List, Int32List, Int64List, Float64List;
 
 import 'package:flutter/services.dart';
+import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 class InitializeMessage {
   int? maxCacheSize;
@@ -430,6 +431,36 @@ class VideoPlayerApi {
         StandardMessageCodec());
     final Map<Object?, Object?>? replyMap =
         await channel.send(encoded) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error =
+          replyMap['error'] as Map<Object?, Object?>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> setDataSource(
+      int textureId, Map<String, dynamic> dataSourceDescription) async {
+    Map<String, dynamic> dataSourceDescription = {};
+    const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.VideoPlayerApi.setDataSource',
+        StandardMessageCodec());
+
+    final Map<Object?, Object?>? replyMap = await channel.send({
+      'textureId': textureId,
+      'dataSource': dataSourceDescription,
+    }) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

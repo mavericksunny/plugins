@@ -56,6 +56,39 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<void> setDataSource(int textureId, DataSource dataSource) async {
+    Map<String, dynamic> dataSourceDescription;
+
+    switch (dataSource.sourceType) {
+      case DataSourceType.asset:
+        dataSourceDescription = <String, dynamic>{
+          'key': dataSource.key,
+          'asset': dataSource.asset,
+          'package': dataSource.package,
+        };
+        break;
+      case DataSourceType.network:
+        dataSourceDescription = <String, dynamic>{
+          'key': dataSource.key,
+          'uri': dataSource.uri,
+          'formatHint': dataSource.rawFormalHint,
+          'useCache': dataSource.useCache,
+        };
+        break;
+      case DataSourceType.file:
+        dataSourceDescription = <String, dynamic>{
+          'key': dataSource.key,
+          'uri': dataSource.uri,
+        };
+        break;
+      default:
+        dataSourceDescription = {};
+        break;
+    }
+    return _api.setDataSource(textureId, dataSourceDescription);
+  }
+
+  @override
   Future<void> setLooping(int textureId, bool looping) {
     return _api.setLooping(LoopingMessage()
       ..textureId = textureId
@@ -112,6 +145,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
         case 'initialized':
           return VideoEvent(
             eventType: VideoEventType.initialized,
+            key: map['key'],
             duration: Duration(milliseconds: map['duration']),
             size: Size(map['width']?.toDouble() ?? 0.0,
                 map['height']?.toDouble() ?? 0.0),
@@ -119,20 +153,31 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
         case 'completed':
           return VideoEvent(
             eventType: VideoEventType.completed,
+            key: map['key'],
           );
         case 'bufferingUpdate':
           final List<dynamic> values = map['values'];
 
           return VideoEvent(
-            buffered: values.map<DurationRange>(_toDurationRange).toList(),
             eventType: VideoEventType.bufferingUpdate,
+            key: map['key'],
+            buffered: values.map<DurationRange>(_toDurationRange).toList(),
           );
         case 'bufferingStart':
-          return VideoEvent(eventType: VideoEventType.bufferingStart);
+          return VideoEvent(
+            eventType: VideoEventType.bufferingStart,
+            key: map['key'],
+          );
         case 'bufferingEnd':
-          return VideoEvent(eventType: VideoEventType.bufferingEnd);
+          return VideoEvent(
+            eventType: VideoEventType.bufferingEnd,
+            key: map['key'],
+          );
         default:
-          return VideoEvent(eventType: VideoEventType.unknown);
+          return VideoEvent(
+            eventType: VideoEventType.unknown,
+            key: map['key'],
+          );
       }
     });
   }
@@ -149,10 +194,6 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
     );
   }
 
-  EventChannel _eventChannelFor(int textureId) {
-    return EventChannel('flutter.io/videoPlayer/videoEvents$textureId');
-  }
-
   static const Map<VideoFormat, String> _videoFormatStringMap =
       <VideoFormat, String>{
     VideoFormat.ss: 'ss',
@@ -160,6 +201,10 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
     VideoFormat.dash: 'dash',
     VideoFormat.other: 'other',
   };
+
+  EventChannel _eventChannelFor(int textureId) {
+    return EventChannel('flutter.io/videoPlayer/videoEvents$textureId');
+  }
 
   DurationRange _toDurationRange(dynamic value) {
     final List<dynamic> pair = value;

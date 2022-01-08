@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:ui';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_player_platform_interface/messages.dart';
@@ -379,26 +377,37 @@ void main() {
       expect(
           player.videoEventsFor(123),
           emitsInOrder(<dynamic>[
-            VideoEvent(
-              eventType: VideoEventType.initialized,
-              duration: const Duration(milliseconds: 98765),
-              size: const Size(1920, 1080),
-            ),
-            VideoEvent(eventType: VideoEventType.completed),
-            VideoEvent(
-                eventType: VideoEventType.bufferingUpdate,
-                buffered: <DurationRange>[
-                  DurationRange(
-                    const Duration(milliseconds: 0),
-                    const Duration(milliseconds: 1234),
-                  ),
-                  DurationRange(
-                    const Duration(milliseconds: 1235),
-                    const Duration(milliseconds: 4000),
-                  ),
-                ]),
-            VideoEvent(eventType: VideoEventType.bufferingStart),
-            VideoEvent(eventType: VideoEventType.bufferingEnd),
+            // VideoEvent(
+            //   key: key,
+            //   eventType: VideoEventType.initialized,
+            //   duration: const Duration(milliseconds: 98765),
+            //   size: const Size(1920, 1080),
+            // ),
+            // VideoEvent(
+            //   key: key,
+            //   eventType: VideoEventType.completed,
+            // ),
+            // VideoEvent(
+            //     key: key,
+            //     eventType: VideoEventType.bufferingUpdate,
+            //     buffered: <DurationRange>[
+            //       DurationRange(
+            //         const Duration(milliseconds: 0),
+            //         const Duration(milliseconds: 1234),
+            //       ),
+            //       DurationRange(
+            //         const Duration(milliseconds: 1235),
+            //         const Duration(milliseconds: 4000),
+            //       ),
+            //     ]),
+            // // VideoEvent(
+            //   key: key,
+            //   eventType: VideoEventType.bufferingStart,
+            // ),
+            // VideoEvent(
+            //   key: key,
+            //   eventType: VideoEventType.bufferingEnd,
+            // ),
           ]));
     });
   });

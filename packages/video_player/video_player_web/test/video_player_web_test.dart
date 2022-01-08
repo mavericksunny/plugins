@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 @TestOn('browser')
-
-import 'dart:async';
+import 'dart:async' show Stream;
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:video_player/video_player.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:video_player_web/video_player_web.dart';
 
@@ -18,7 +16,9 @@ void main() {
 
     setUp(() async {
       VideoPlayerPlatform.instance = VideoPlayerPlugin();
-      textureId = await VideoPlayerPlatform.instance.create(
+      textureId = await VideoPlayerPlatform.instance.create();
+      await VideoPlayerPlatform.instance.setDataSource(
+        textureId,
         DataSource(
             sourceType: DataSourceType.network,
             uri:
@@ -34,37 +34,46 @@ void main() {
       expect(VideoPlayerPlatform.instance.init(100, 10), completes);
     });
 
-    test('can create from network', () {
+    test('can set data source from network', () async {
       expect(
-          VideoPlayerPlatform.instance.create(
-            DataSource(
-                sourceType: DataSourceType.network,
-                uri:
-                    'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
-          ),
-          completion(isNonZero));
+          VideoPlayerPlatform.instance.create().then((textureId) {
+            return VideoPlayerPlatform.instance.setDataSource(
+              textureId,
+              DataSource(
+                  sourceType: DataSourceType.network,
+                  uri:
+                      'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
+            );
+          }),
+          completes);
     });
 
-    test('can create from asset', () {
+    test('can set data source from asset', () async {
       expect(
-          VideoPlayerPlatform.instance.create(
-            DataSource(
-              sourceType: DataSourceType.asset,
-              asset: 'videos/bee.mp4',
-              package: 'bee_vids',
-            ),
-          ),
-          completion(isNonZero));
+          VideoPlayerPlatform.instance.create().then((textureId) {
+            return VideoPlayerPlatform.instance.setDataSource(
+              textureId,
+              DataSource(
+                sourceType: DataSourceType.asset,
+                asset: 'videos/bee.mp4',
+                package: 'bee_vids',
+              ),
+            );
+          }),
+          completes);
     });
 
     test('cannot create from file', () {
       expect(
-          VideoPlayerPlatform.instance.create(
-            DataSource(
-              sourceType: DataSourceType.file,
-              uri: '/videos/bee.mp4',
-            ),
-          ),
+          VideoPlayerPlatform.instance.create().then((textureId) {
+            return VideoPlayerPlatform.instance.setDataSource(
+              textureId,
+              DataSource(
+                sourceType: DataSourceType.file,
+                uri: '/videos/bee.mp4',
+              ),
+            );
+          }),
           throwsUnimplementedError);
     });
 
@@ -77,6 +86,10 @@ void main() {
           VideoPlayerPlatform.instance.setLooping(textureId, true), completes);
     });
 
+    test('can set muted', () {
+      expect(VideoPlayerPlatform.instance.setMuted(textureId, true), completes);
+    });
+
     test('can play', () async {
       // Mute video to allow autoplay (See https://goo.gl/xX8pDD)
       await VideoPlayerPlatform.instance.setVolume(textureId, 0);
@@ -84,7 +97,10 @@ void main() {
     });
 
     test('throws PlatformException when playing bad media', () async {
-      int videoPlayerId = await VideoPlayerPlatform.instance.create(
+      int textureId = await VideoPlayerPlatform.instance.create();
+
+      await VideoPlayerPlatform.instance.setDataSource(
+        textureId,
         DataSource(
             sourceType: DataSourceType.network,
             uri:
@@ -92,11 +108,11 @@ void main() {
       );
 
       Stream<VideoEvent> eventStream =
-          VideoPlayerPlatform.instance.videoEventsFor(videoPlayerId);
+          VideoPlayerPlatform.instance.videoEventsFor(textureId);
 
       // Mute video to allow autoplay (See https://goo.gl/xX8pDD)
-      await VideoPlayerPlatform.instance.setVolume(videoPlayerId, 0);
-      await VideoPlayerPlatform.instance.play(videoPlayerId);
+      await VideoPlayerPlatform.instance.setVolume(textureId, 0);
+      await VideoPlayerPlatform.instance.play(textureId);
 
       expect(eventStream, emitsError(isA<PlatformException>()));
     });

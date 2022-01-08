@@ -54,6 +54,11 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
     throw UnimplementedError('create() has not been implemented.');
   }
 
+  /// Set data source of video.
+  Future<void> setDataSource(int textureId, DataSource dataSource) {
+    throw UnimplementedError('setDataSource() has not been implemented.');
+  }
+
   /// Returns a Stream of [VideoEventType]s.
   Stream<VideoEvent> videoEventsFor(int textureId) {
     throw UnimplementedError('videoEventsFor() has not been implemented.');
@@ -77,6 +82,11 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   /// Sets the volume to a range between 0.0 and 1.0.
   Future<void> setVolume(int textureId, double volume) {
     throw UnimplementedError('setVolume() has not been implemented.');
+  }
+
+  /// Sets the muted attribute of the video.
+  Future<void> setMuted(int textureId, bool muted) {
+    throw UnimplementedError('setMuted() has no been implemented.');
   }
 
   /// Sets the video position to a [Duration] from the start.
@@ -133,6 +143,9 @@ class DataSource {
     this.httpHeaders = const {},
   });
 
+  /// Describes the type of data source this [VideoPlayerController]
+  /// is constructed with.
+  ///
   /// The way in which the video was originally loaded.
   ///
   /// This has nothing to do with the video's file type. It's just the place
@@ -154,6 +167,22 @@ class DataSource {
   /// Always empty for other video types.
   Map<String, String> httpHeaders;
 
+  /// **Android only**. String representation of a formatHint.
+  String? get rawFormalHint {
+    switch (formatHint) {
+      case VideoFormat.ss:
+        return 'ss';
+      case VideoFormat.hls:
+        return 'hls';
+      case VideoFormat.dash:
+        return 'dash';
+      case VideoFormat.other:
+        return 'other';
+    }
+
+    return null;
+  }
+
   /// The name of the asset. Only set for [DataSourceType.asset] videos.
   final String? asset;
 
@@ -163,6 +192,28 @@ class DataSource {
   /// Use cache for this data source or not. Used only for network data source.
   final bool useCache;
   final String? package;
+
+  /// Use cache for this data source or not. Used only for network data source.
+  /// Key to compare DataSource
+  String get key {
+    uri ??
+        ((package ?? "") + ":" + (asset ?? "")) + ":" + (rawFormalHint ?? "");
+    String? result = "";
+
+    if (uri != null && uri!.isNotEmpty) {
+      result = uri;
+    } else if (package != null && package!.isNotEmpty) {
+      result = "$package:$asset";
+    } else {
+      result = "$asset";
+    }
+
+    if (formatHint != null) {
+      result = "$result:${rawFormalHint}";
+    }
+
+    return result!;
+  }
 }
 
 /// The way in which the video was originally loaded.
@@ -208,6 +259,7 @@ class VideoEvent {
   /// arguments can be null.
   VideoEvent({
     required this.eventType,
+    required this.key,
     this.duration,
     this.size,
     this.buffered,
@@ -215,6 +267,11 @@ class VideoEvent {
 
   /// The type of the event.
   final VideoEventType eventType;
+
+  /// Data source of the video.
+  ///
+  /// Used to determine which video the event belongs to.
+  final String key;
 
   /// Duration of the video.
   ///
@@ -236,6 +293,7 @@ class VideoEvent {
     return identical(this, other) ||
         other is VideoEvent &&
             runtimeType == other.runtimeType &&
+            key == other.key &&
             eventType == other.eventType &&
             duration == other.duration &&
             size == other.size &&

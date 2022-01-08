@@ -34,8 +34,9 @@ import com.google.android.exoplayer2.upstream.FileDataSource;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSink;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor;
-import com.google.android.exoplayer2.database.ExoDatabaseProvider;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
+import com.google.android.exoplayer2.database.ExoDatabaseProvider;
+
 import com.google.android.exoplayer2.util.Util;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
@@ -58,6 +59,9 @@ final class VideoPlayer {
 
   private final TextureRegistry.SurfaceTextureEntry textureEntry;
 
+  private final int maxCacheSize;
+  private final int maxCacheFileSize;
+
   private QueuingEventSink eventSink = new QueuingEventSink();
 
   private final EventChannel eventChannel;
@@ -65,6 +69,9 @@ final class VideoPlayer {
   private boolean isInitialized = false;
 
   private final VideoPlayerOptions options;
+  private float lastMutedVolume;
+
+  private String key;
 
   VideoPlayer(
       Context context,
@@ -83,8 +90,20 @@ final class VideoPlayer {
 
     exoPlayer = new SimpleExoPlayer.Builder(context).build();
 
-    Uri uri = Uri.parse(dataSource);
+    setupVideoPlayer(eventChannel, textureEntry);
+  }
 
+  void setDataSource(
+      Context context,
+      String key,
+      String dataSource,
+      String formatHint,
+      boolean useCache, Map<String, String> httpHeaders) {
+    this.key = key;
+
+    isInitialized = false;
+
+    Uri uri = Uri.parse(dataSource);
     DataSource.Factory dataSourceFactory;
     if (isHTTP(uri)) {
       DefaultHttpDataSource.Factory httpDataSourceFactory =
@@ -108,7 +127,7 @@ final class VideoPlayer {
     exoPlayer.setMediaSource(mediaSource);
     exoPlayer.prepare();
 
-    setupVideoPlayer(eventChannel, textureEntry);
+   // result.success(null);
   }
 
   private static boolean isHTTP(Uri uri) {
@@ -212,6 +231,7 @@ final class VideoPlayer {
             } else if (playbackState == Player.STATE_ENDED) {
               Map<String, Object> event = new HashMap<>();
               event.put("event", "completed");
+              event.put("key", key);
               eventSink.success(event);
             }
 
@@ -269,6 +289,14 @@ final class VideoPlayer {
 
     exoPlayer.setPlaybackParameters(playbackParameters);
   }
+  void setMuted(boolean muted) {
+    if (muted) {
+      lastMutedVolume = exoPlayer.getVolume();
+      exoPlayer.setVolume(0.0f);
+    } else if (exoPlayer.getVolume() == 0.0) {
+      exoPlayer.setVolume(lastMutedVolume);
+    }
+  }
 
   void seekTo(int location) {
     exoPlayer.seekTo(location);
@@ -283,6 +311,7 @@ final class VideoPlayer {
     if (isInitialized) {
       Map<String, Object> event = new HashMap<>();
       event.put("event", "initialized");
+      event.put("key", key);
       event.put("duration", exoPlayer.getDuration());
 
       if (exoPlayer.getVideoFormat() != null) {

@@ -66,11 +66,18 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
   }
 
   @override
-  Future<int> create(DataSource dataSource) async {
+  Future<int> create() async {
+      late String uri;
     final int textureId = _textureCounter;
-    _textureCounter++;
+    final _VideoPlayer player = _VideoPlayer(textureId);
 
-    late String uri;
+    _videoPlayers[textureId] = player;
+    return textureId;
+  }
+
+  @override
+  Future<void> setDataSource(int textureId, DataSource dataSource) async {
+    final _VideoPlayer player = _videoPlayers[textureId];
     switch (dataSource.sourceType) {
       case DataSourceType.network:
         // Do NOT modify the incoming uri, it can be a Blob, and Safari doesn't
@@ -93,15 +100,7 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
             'web implementation of video_player cannot play content uri'));
     }
 
-    final _VideoPlayer player = _VideoPlayer(
-      uri: uri,
-      textureId: textureId,
-    );
-
-    player.initialize();
-
-    _videoPlayers[textureId] = player;
-    return textureId;
+    player.setDataSource(dataSource.key, uri);
   }
 
   @override
@@ -129,6 +128,11 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
     assert(speed > 0);
 
     return _videoPlayers[textureId]!.setPlaybackSpeed(speed);
+  }
+
+  @override
+  Future<void> setMuted(int textureId, bool muted) async {
+    return _videoPlayers[textureId].setMuted(muted);
   }
 
   @override
@@ -179,7 +183,7 @@ class _VideoPlayer {
     }
   }
 
-  void initialize() {
+  _VideoPlayer(this.textureId) {
     videoElement = VideoElement()
       ..src = uri
       ..autoplay = false
@@ -239,8 +243,16 @@ class _VideoPlayer {
     });
   }
 
+  void setDataSource(String key, Uri uri) {
+    this.key = key;
+    this.uri = uri;
+    isInitialized = false;
+    videoElement.src = uri.toString();
+  }
+
   void sendBufferingUpdate() {
     eventController.add(VideoEvent(
+      key: key,
       buffered: _toDurationRange(videoElement.buffered),
       eventType: VideoEventType.bufferingUpdate,
     ));
@@ -296,6 +308,7 @@ class _VideoPlayer {
   void sendInitialized() {
     eventController.add(
       VideoEvent(
+        key: key,
         eventType: VideoEventType.initialized,
         duration: Duration(
           milliseconds: (videoElement.duration * 1000).round(),
