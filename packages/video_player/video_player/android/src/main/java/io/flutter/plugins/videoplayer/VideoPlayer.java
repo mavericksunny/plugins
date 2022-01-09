@@ -26,6 +26,8 @@ import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -89,32 +91,32 @@ final class VideoPlayer {
     this.options = options;
     this.maxCacheSize = maxCacheSize;
     this.maxCacheFileSize = maxCacheFileSize;
+
+//    Uri uri = Uri.parse(dataSource);
+//
+//    DataSource.Factory dataSourceFactory;
+//    if (isHTTP(uri)) {
+//      DefaultHttpDataSource.Factory httpDataSourceFactory =
+//          new DefaultHttpDataSource.Factory()
+//              .setUserAgent("ExoPlayer")
+//              .setAllowCrossProtocolRedirects(true);
+//
+//      if (httpHeaders != null && !httpHeaders.isEmpty()) {
+//        httpDataSourceFactory.setDefaultRequestProperties(httpHeaders);
+//      }
+//      dataSourceFactory = httpDataSourceFactory;
+//      if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
+//        dataSourceFactory =
+//            new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
+//      }
+//    } else {
+//      dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
+//    }
+
+    //TrackSelector trackSelector = new DefaultTrackSelector(context);
     exoPlayer = new SimpleExoPlayer.Builder(context).build();
-
-    Uri uri = Uri.parse(dataSource);
-
-    DataSource.Factory dataSourceFactory;
-    if (isHTTP(uri)) {
-      DefaultHttpDataSource.Factory httpDataSourceFactory =
-          new DefaultHttpDataSource.Factory()
-              .setUserAgent("ExoPlayer")
-              .setAllowCrossProtocolRedirects(true);
-
-      if (httpHeaders != null && !httpHeaders.isEmpty()) {
-        httpDataSourceFactory.setDefaultRequestProperties(httpHeaders);
-      }
-      dataSourceFactory = httpDataSourceFactory;
-      if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
-        dataSourceFactory =
-            new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
-      }
-    } else {
-      dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
-    }
-
-    MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
-    exoPlayer.setMediaSource(mediaSource);
-    exoPlayer.prepare();
+//    exoPlayer.setMediaSource(mediaSource);
+  //  exoPlayer.prepare();
 
     setupVideoPlayer(eventChannel, textureEntry);
   }

@@ -54,7 +54,7 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   }
 
   /// Creates an instance of a video player and returns its textureId.
-  Future<int?> create(DataSource dataSource) {
+  Future<int?> create() {
     throw UnimplementedError('create() has not been implemented.');
   }
 
@@ -186,8 +186,7 @@ class DataSource {
   String? get dataSource => uri ?? asset;
 
   String get key {
-    uri ??
-        ((package ?? "") + ":" + asset!) + ":" + (formatHint.toString() ?? "");
+    uri ?? ((package ?? "") + ":" + asset!) + ":" + (formatHint.toString());
     String result = "";
 
     if (uri != null && uri!.isNotEmpty) {

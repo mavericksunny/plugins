@@ -226,7 +226,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
   @Override
   public void setDataSource(DataSourceMessage arg) {
     VideoPlayer player = videoPlayers.get(arg.getTextureId());
-    player.setDataSource(flutterState.applicationContext, arg.getKey(), arg.getFormatHint(), arg.getUri(),  arg.getUseCache(), null);
+    player.setDataSource(flutterState.applicationContext, arg.getKey(), arg.getUri(), arg.getFormatHint(),  arg.getUseCache(), null);
   }
 
   private interface KeyForAssetFn {

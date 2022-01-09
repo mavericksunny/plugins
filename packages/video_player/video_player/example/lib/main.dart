@@ -154,13 +154,14 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/Butterfly-209.mp4');
 
+    _controller = VideoPlayerController();
+    _controller.setAssetDataSource("assets/Butterfly-209.mp4");
     _controller.addListener(() {
       setState(() {});
     });
     _controller.setLooping(true);
-    _controller.initialize().then((_) => setState(() {}));
+    //_controller.initialize().then((_) => setState(() {}));
     _controller.play();
   }
 
@@ -217,10 +218,12 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(
+
+    _controller = VideoPlayerController();
+
+    _controller.setNetworkDataSource(
       'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
       closedCaptionFile: _loadCaptions(),
-      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
       useCache: true,
     );
 
@@ -228,7 +231,6 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
       setState(() {});
     });
     _controller.setLooping(true);
-    _controller.initialize();
   }
 
   @override
@@ -355,8 +357,8 @@ class _PlayerVideoAndPopPageState extends State<_PlayerVideoAndPopPage> {
   void initState() {
     super.initState();
 
-    _videoPlayerController =
-        VideoPlayerController.asset('assets/Butterfly-209.mp4');
+    _videoPlayerController = VideoPlayerController();
+    _videoPlayerController.setAssetDataSource("assets/Butterfly-209.mp4");
     _videoPlayerController.addListener(() {
       if (startedPlaying && !_videoPlayerController.value.isPlaying) {
         Navigator.pop(context);
@@ -371,7 +373,6 @@ class _PlayerVideoAndPopPageState extends State<_PlayerVideoAndPopPage> {
   }
 
   Future<bool> started() async {
-    await _videoPlayerController.initialize();
     await _videoPlayerController.play();
     startedPlaying = true;
     return true;
