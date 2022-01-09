@@ -214,7 +214,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     this.closedCaptionFile,
     this.formatHint,
   }) : super(VideoPlayerValue(duration: Duration.zero)) {
-    initialize();
+    _initialize();
   }
   //
   // VideoPlayerController.asset(this.dataSource,
@@ -323,6 +323,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   Timer? _timer;
   bool _isDisposed = false;
   Completer<void>? _creatingCompleter;
+  Completer<void>? _initializingCompleter;
   StreamSubscription<dynamic>? _eventSubscription;
   late _VideoAppLifeCycleObserver _lifeCycleObserver;
 
@@ -359,7 +360,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   /// Attempts to open the given [dataSource] and load metadata about the video.
-  Future<void> initialize() async {
+  Future<void> _initialize() async {
     _creatingCompleter = Completer<void>();
     _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
     _lifeCycleObserver.initialize();
@@ -405,8 +406,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
 
     if (!_creatingCompleter!.isCompleted) _creatingCompleter!.complete(null);
-    final Completer<void> initializingCompleter = Completer<void>();
-
     void eventListener(VideoEvent event) {
       if (_isDisposed || event.key != _dataSource?.key) {
         return;
@@ -419,7 +418,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
             size: event.size,
             isInitialized: event.duration != null,
           );
-          initializingCompleter.complete(null);
+          _initializingCompleter?.complete(null);
           _applyLooping();
           _applyVolume();
           _applyPlayPause();
@@ -457,8 +456,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       if (obj is PlatformException) {
         value = VideoPlayerValue.erroneous(obj.message!);
         _timer?.cancel();
-        if (!initializingCompleter.isCompleted) {
-          initializingCompleter.completeError(obj);
+        if (!_initializingCompleter!.isCompleted) {
+          _initializingCompleter?.completeError(obj);
         }
       }
     }
@@ -466,13 +465,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _eventSubscription = VideoPlayerPlatform.instance
         .videoEventsFor(_textureId)
         .listen(eventListener, onError: errorListener);
-    return initializingCompleter.future;
+    return _initializingCompleter?.future;
   }
 
   Future<void>? _ensureVideoPluginInitialized() async {
-    // if (_pluginInitializingCompleter != null) {
-    //   return _pluginInitializingCompleter?.future;
-    // }
+    if (_pluginInitializingCompleter != null) {
+      return _pluginInitializingCompleter?.future;
+    }
 
     _pluginInitializingCompleter = Completer();
 
@@ -562,10 +561,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
       _lifeCycleObserver.initialize();
     }
-    _pluginInitializingCompleter = Completer<void>();
+    _initializingCompleter = Completer<void>();
     await VideoPlayerPlatform.instance
         .setDataSource(_textureId, dataSourceDescription);
-    return _pluginInitializingCompleter!.future;
+    return _initializingCompleter?.future;
   }
 
   @override

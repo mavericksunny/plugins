@@ -149,11 +149,13 @@ final class VideoPlayer {
         dataSourceFactory =
                 new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
       }
-
+    }else {
+      dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
+    }
       MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
       exoPlayer.setMediaSource(mediaSource);
       exoPlayer.prepare();
-    }
+
   }
 
   private static boolean isHTTP(Uri uri) {

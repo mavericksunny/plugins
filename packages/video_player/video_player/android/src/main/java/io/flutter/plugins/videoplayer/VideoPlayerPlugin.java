@@ -130,29 +130,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
     EventChannel eventChannel =
         new EventChannel(
             flutterState.binaryMessenger, "flutter.io/videoPlayer/videoEvents" + handle.id());
-
     VideoPlayer player;
-    if (arg.getAsset() != null) {
-      String assetLookupKey;
-      if (arg.getPackageName() != null) {
-        assetLookupKey =
-            flutterState.keyForAssetAndPackageName.get(arg.getAsset(), arg.getPackageName());
-      } else {
-        assetLookupKey = flutterState.keyForAsset.get(arg.getAsset());
-      }
-      player =
-          new VideoPlayer(
-              flutterState.applicationContext,
-              eventChannel,
-              handle,
-              "asset:///" + assetLookupKey,
-              null,
-              options,
-              maxCacheSize,
-              maxCacheFileSize,
-              false, null);
-    } else {
-      @SuppressWarnings("unchecked")
       Map<String, String> httpHeaders = arg.getHttpHeaders();
       player =
           new VideoPlayer(
@@ -166,9 +144,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               maxCacheFileSize,
               arg.getUseCache(),
               httpHeaders);
-    }
     videoPlayers.put(handle.id(), player);
-
     TextureMessage result = new TextureMessage();
     result.setTextureId(handle.id());
     return result;
@@ -226,7 +202,18 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
   @Override
   public void setDataSource(DataSourceMessage arg) {
     VideoPlayer player = videoPlayers.get(arg.getTextureId());
-    player.setDataSource(flutterState.applicationContext, arg.getKey(), arg.getUri(), arg.getFormatHint(),  arg.getUseCache(), null);
+        if (arg.getAsset() != null) {
+      String assetLookupKey;
+      if (arg.getPackageName() != null) {
+        assetLookupKey =
+            flutterState.keyForAssetAndPackageName.get(arg.getAsset(), arg.getPackageName());
+      } else {
+        assetLookupKey = flutterState.keyForAsset.get(arg.getAsset());
+      }
+      player.setDataSource(flutterState.applicationContext, arg.getKey(),  "asset:///" + assetLookupKey, arg.getFormatHint(),  arg.getUseCache(), null);
+        } else {
+          player.setDataSource(flutterState.applicationContext, arg.getKey(), arg.getUri(), arg.getFormatHint(),  arg.getUseCache(), null);
+        }
   }
 
   private interface KeyForAssetFn {

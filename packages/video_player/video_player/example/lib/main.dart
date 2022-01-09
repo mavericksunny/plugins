@@ -216,6 +216,9 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
   void initState() {
     super.initState();
     _controller = VideoPlayerController();
+    _controller.addListener(() {
+      setState(() {});
+    });
 
     _controller.setNetworkDataSource(
       'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
