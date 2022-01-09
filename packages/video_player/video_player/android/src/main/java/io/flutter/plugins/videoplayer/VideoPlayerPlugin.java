@@ -21,6 +21,8 @@ import io.flutter.plugins.videoplayer.Messages.PositionMessage;
 import io.flutter.plugins.videoplayer.Messages.TextureMessage;
 import io.flutter.plugins.videoplayer.Messages.VideoPlayerApi;
 import io.flutter.plugins.videoplayer.Messages.VolumeMessage;
+import io.flutter.plugins.videoplayer.Messages.DataSourceMessage;
+
 import io.flutter.view.TextureRegistry;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -219,6 +221,12 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
   @Override
   public void setMixWithOthers(MixWithOthersMessage arg) {
     options.mixWithOthers = arg.getMixWithOthers();
+  }
+
+  @Override
+  public void setDataSource(DataSourceMessage arg) {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    player.setDataSource(flutterState.applicationContext, arg.getKey(), arg.getFormatHint(), arg.getUri(),  arg.getUseCache(), null);
   }
 
   private interface KeyForAssetFn {

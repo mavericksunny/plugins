@@ -56,6 +56,29 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<void> setDataSource(int textureId, DataSource dataSource) async {
+    DataSourceMessage dataSourceMessage = DataSourceMessage();
+    dataSourceMessage.key = dataSource.key;
+    dataSourceMessage.textureId = textureId;
+    dataSourceMessage.useCache = true;
+    switch (dataSource.sourceType) {
+      case DataSourceType.asset:
+        dataSourceMessage.asset = dataSource.asset;
+        dataSourceMessage.packageName = dataSource.package;
+        break;
+      case DataSourceType.network:
+        dataSourceMessage.uri = dataSource.uri;
+        dataSourceMessage.formatHint = dataSource.rawFormalHint;
+        break;
+      case DataSourceType.file:
+        dataSourceMessage.uri = dataSource.uri;
+        break;
+    }
+
+    await _api.setDataSource(dataSourceMessage);
+  }
+
+  @override
   Future<void> setLooping(int textureId, bool looping) {
     return _api.setLooping(LoopingMessage()
       ..textureId = textureId
@@ -111,6 +134,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
       switch (map['event']) {
         case 'initialized':
           return VideoEvent(
+            key: map['key'],
             eventType: VideoEventType.initialized,
             duration: Duration(milliseconds: map['duration']),
             size: Size(map['width']?.toDouble() ?? 0.0,
@@ -118,21 +142,32 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
           );
         case 'completed':
           return VideoEvent(
+            key: map['key'],
             eventType: VideoEventType.completed,
           );
         case 'bufferingUpdate':
           final List<dynamic> values = map['values'];
 
           return VideoEvent(
+            key: map['key'],
             buffered: values.map<DurationRange>(_toDurationRange).toList(),
             eventType: VideoEventType.bufferingUpdate,
           );
         case 'bufferingStart':
-          return VideoEvent(eventType: VideoEventType.bufferingStart);
+          return VideoEvent(
+            eventType: VideoEventType.bufferingStart,
+            key: map['key'],
+          );
         case 'bufferingEnd':
-          return VideoEvent(eventType: VideoEventType.bufferingEnd);
+          return VideoEvent(
+            eventType: VideoEventType.bufferingEnd,
+            key: map['key'],
+          );
         default:
-          return VideoEvent(eventType: VideoEventType.unknown);
+          return VideoEvent(
+            eventType: VideoEventType.unknown,
+            key: map['key'],
+          );
       }
     });
   }

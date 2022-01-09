@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import io.flutter.plugin.common.MethodChannel.Result;
+
 
 final class VideoPlayer {
   private static final String FORMAT_SS = "ss";
@@ -61,6 +63,11 @@ final class VideoPlayer {
   private QueuingEventSink eventSink = new QueuingEventSink();
 
   private final EventChannel eventChannel;
+
+  private String key;
+
+  private long maxCacheSize;
+  private long maxCacheFileSize;
 
   private boolean isInitialized = false;
 
@@ -80,7 +87,8 @@ final class VideoPlayer {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
     this.options = options;
-
+    this.maxCacheSize = maxCacheSize;
+    this.maxCacheFileSize = maxCacheFileSize;
     exoPlayer = new SimpleExoPlayer.Builder(context).build();
 
     Uri uri = Uri.parse(dataSource);
@@ -109,6 +117,41 @@ final class VideoPlayer {
     exoPlayer.prepare();
 
     setupVideoPlayer(eventChannel, textureEntry);
+  }
+
+
+  void setDataSource(
+          Context context,
+          String key,
+          String dataSource,
+          String formatHint,
+          boolean useCache,
+          Map<String, String> httpHeaders) {
+    this.key = key;
+
+    isInitialized = false;
+
+    Uri uri = Uri.parse(dataSource);
+    DataSource.Factory dataSourceFactory;
+    if (isHTTP(uri)) {
+      DefaultHttpDataSource.Factory httpDataSourceFactory =
+              new DefaultHttpDataSource.Factory()
+                      .setUserAgent("ExoPlayer")
+                      .setAllowCrossProtocolRedirects(true);
+
+      if (httpHeaders != null && !httpHeaders.isEmpty()) {
+        httpDataSourceFactory.setDefaultRequestProperties(httpHeaders);
+      }
+      dataSourceFactory = httpDataSourceFactory;
+      if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
+        dataSourceFactory =
+                new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
+      }
+
+      MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
+      exoPlayer.setMediaSource(mediaSource);
+      exoPlayer.prepare();
+    }
   }
 
   private static boolean isHTTP(Uri uri) {
@@ -182,6 +225,7 @@ final class VideoPlayer {
           }
         });
 
+
     surface = new Surface(textureEntry.surfaceTexture());
     exoPlayer.setVideoSurface(surface);
     setAudioAttributes(exoPlayer, options.mixWithOthers);
@@ -212,6 +256,7 @@ final class VideoPlayer {
             } else if (playbackState == Player.STATE_ENDED) {
               Map<String, Object> event = new HashMap<>();
               event.put("event", "completed");
+              event.put("key", key);
               eventSink.success(event);
             }
 
@@ -284,6 +329,7 @@ final class VideoPlayer {
       Map<String, Object> event = new HashMap<>();
       event.put("event", "initialized");
       event.put("duration", exoPlayer.getDuration());
+      event.put("key", key);
 
       if (exoPlayer.getVideoFormat() != null) {
         Format videoFormat = exoPlayer.getVideoFormat();

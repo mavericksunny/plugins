@@ -49,6 +49,10 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
     throw UnimplementedError('dispose() has not been implemented.');
   }
 
+  Future<void> setDataSource(int textureId, DataSource dataSource) {
+    throw UnimplementedError('setDataSource() has not been implemented.');
+  }
+
   /// Creates an instance of a video player and returns its textureId.
   Future<int?> create(DataSource dataSource) {
     throw UnimplementedError('create() has not been implemented.');
@@ -149,6 +153,21 @@ class DataSource {
   /// detection with whatever is set here.
   final VideoFormat? formatHint;
 
+  String? get rawFormalHint {
+    switch (formatHint) {
+      case VideoFormat.ss:
+        return 'ss';
+      case VideoFormat.hls:
+        return 'hls';
+      case VideoFormat.dash:
+        return 'dash';
+      case VideoFormat.other:
+        return 'other';
+    }
+
+    return null;
+  }
+
   /// HTTP headers used for the request to the [uri].
   /// Only for [DataSourceType.network] videos.
   /// Always empty for other video types.
@@ -163,6 +182,28 @@ class DataSource {
   /// Use cache for this data source or not. Used only for network data source.
   final bool useCache;
   final String? package;
+
+  String? get dataSource => uri ?? asset;
+
+  String get key {
+    uri ??
+        ((package ?? "") + ":" + asset!) + ":" + (formatHint.toString() ?? "");
+    String result = "";
+
+    if (uri != null && uri!.isNotEmpty) {
+      result = uri!;
+    } else if (package != null && package!.isNotEmpty) {
+      result = "$package:$asset";
+    } else {
+      result = "$asset";
+    }
+
+    if (formatHint != null) {
+      result = "$result:${rawFormalHint}";
+    }
+
+    return result;
+  }
 }
 
 /// The way in which the video was originally loaded.
@@ -208,6 +249,7 @@ class VideoEvent {
   /// arguments can be null.
   VideoEvent({
     required this.eventType,
+    required this.key,
     this.duration,
     this.size,
     this.buffered,
@@ -215,6 +257,7 @@ class VideoEvent {
 
   /// The type of the event.
   final VideoEventType eventType;
+  final String key;
 
   /// Duration of the video.
   ///

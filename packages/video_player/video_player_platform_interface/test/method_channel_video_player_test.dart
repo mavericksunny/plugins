@@ -380,13 +380,15 @@ void main() {
           player.videoEventsFor(123),
           emitsInOrder(<dynamic>[
             VideoEvent(
+              key: "",
               eventType: VideoEventType.initialized,
               duration: const Duration(milliseconds: 98765),
               size: const Size(1920, 1080),
             ),
-            VideoEvent(eventType: VideoEventType.completed),
+            VideoEvent(eventType: VideoEventType.completed, key: ""),
             VideoEvent(
                 eventType: VideoEventType.bufferingUpdate,
+                key: "",
                 buffered: <DurationRange>[
                   DurationRange(
                     const Duration(milliseconds: 0),
@@ -397,8 +399,14 @@ void main() {
                     const Duration(milliseconds: 4000),
                   ),
                 ]),
-            VideoEvent(eventType: VideoEventType.bufferingStart),
-            VideoEvent(eventType: VideoEventType.bufferingEnd),
+            VideoEvent(
+              eventType: VideoEventType.bufferingStart,
+              key: "",
+            ),
+            VideoEvent(
+              eventType: VideoEventType.bufferingEnd,
+              key: "",
+            ),
           ]));
     });
   });
