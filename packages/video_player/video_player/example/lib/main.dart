@@ -157,10 +157,7 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
 
     _controller = VideoPlayerController();
     _controller.setAssetDataSource("assets/Butterfly-209.mp4");
-    _controller.addListener(() {
-      setState(() {});
-    });
-    _controller.setLooping(true);
+    // _controller.setLooping(true);
     //_controller.initialize().then((_) => setState(() {}));
     _controller.play();
   }
@@ -218,7 +215,6 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
   @override
   void initState() {
     super.initState();
-
     _controller = VideoPlayerController();
 
     _controller.setNetworkDataSource(
@@ -226,10 +222,6 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
       closedCaptionFile: _loadCaptions(),
       useCache: true,
     );
-
-    _controller.addListener(() {
-      setState(() {});
-    });
     _controller.setLooping(true);
   }
 

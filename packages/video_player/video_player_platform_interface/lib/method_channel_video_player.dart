@@ -62,6 +62,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
     dataSourceMessage.useCache = true;
     switch (dataSource.sourceType) {
       case DataSourceType.asset:
+        dataSourceMessage.uri = dataSource.asset;
         dataSourceMessage.asset = dataSource.asset;
         dataSourceMessage.packageName = dataSource.package;
         break;
