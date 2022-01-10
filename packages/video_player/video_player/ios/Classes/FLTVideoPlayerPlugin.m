@@ -84,11 +84,6 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   return self;
 }
 
-//- (instancetype)initWithAsset:(NSString*)asset frameUpdater:(FLTFrameUpdater*)frameUpdater {
-//  NSString* path = [[NSBundle mainBundle] pathForResource:asset ofType:nil];
-//  return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater enableCache:NO httpHeaders:nil];
-//}
-
 - (void)addObservers:(AVPlayerItem*)item {
   [item addObserver:self
          forKeyPath:@"loadedTimeRanges"
@@ -203,27 +198,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
   _displayLink.paused = YES;
 }
-
-//
-//- (instancetype)initWithURL:(NSURL*)url
-//               frameUpdater:(FLTFrameUpdater*)frameUpdater
-//                enableCache:(BOOL)enableCache
-//               httpHeaders:(NSDictionary<NSString*, NSString*>*)headers
-//                {
-//  AVPlayerItem* item;
-//  if (enableCache) {
-//    item = [[FLTVideoPlayer resourceLoaderManager] playerItemWithURL:url];
-//  } else {
-//    NSDictionary<NSString*, id>* options = nil;
-//  if (headers != nil && [headers count] != 0) {
-//    options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
-//  }
-//  AVURLAsset* urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
-//  item = [AVPlayerItem playerItemWithAsset:urlAsset];
-//
-//  }
-//  return [self initWithPlayerItem:item frameUpdater:frameUpdater];
-//}
 
 - (void)setDataSourceAsset:(NSString*)asset withKey:(NSString*)key {
   NSString* path = [[NSBundle mainBundle] pathForResource:asset ofType:nil];
@@ -621,32 +595,30 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 // trasparent frame for this situation
 - (CVPixelBufferRef)prevTransparentBuffer {
   if (_prevBuffer) {
-    CVPixelBufferLockBaseAddress(_prevBuffer, 0);
-
-    long bufferWidth = CVPixelBufferGetWidth(_prevBuffer);
-    long bufferHeight = CVPixelBufferGetHeight(_prevBuffer);
-    unsigned char* pixel = (unsigned char*)CVPixelBufferGetBaseAddress(_prevBuffer);
-
-    for (long row = 0; row < bufferHeight; row++) {
-      for (long column = 0; column < bufferWidth; column++) {
-        pixel[0] = 0;
-        pixel[1] = 0;
-        pixel[2] = 0;
-        pixel[3] = 0;
-        pixel += 4;
-      }
-    }
-    CVPixelBufferUnlockBaseAddress(_prevBuffer, 0);
+      CVPixelBufferLockBaseAddress(_prevBuffer, 0);
+         size_t width = CVPixelBufferGetWidth(_prevBuffer);
+         size_t height = CVPixelBufferGetHeight(_prevBuffer);
+         UInt32* buffer = (UInt32*)CVPixelBufferGetBaseAddress(_prevBuffer);
+         for ( unsigned long i = 0; i < width * height; i++ )
+         {
+             buffer[i] = CFSwapInt32HostToBig(0x000000ff);
+         }
+         CVPixelBufferUnlockBaseAddress(_prevBuffer, 0);
     return _prevBuffer;
   }
   return _prevBuffer;
 }
 
 - (CVPixelBufferRef)copyPixelBuffer {
+    if (!_videoOutput || !_isInitialized || !_isPlaying || !_key || ![_player currentItem] ||
+          ![[_player currentItem] isPlaybackLikelyToKeepUp]) {
+        return [self prevTransparentBuffer];
+      }
   CMTime outputItemTime = [_videoOutput itemTimeForHostTime:CACurrentMediaTime()];
   if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
-    return [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];
-  } else {
+      _prevBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];
+        return [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];  }
+  else {
     return NULL;
   }
 }
