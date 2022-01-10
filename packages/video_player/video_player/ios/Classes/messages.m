@@ -238,10 +238,14 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
   if ((NSNull *)result.useCache == [NSNull null]) {
     result.useCache = nil;
   }
+    result.textureId = dict[@"textureId"];
+    if ((NSNull *)result.textureId == [NSNull null]) {
+      result.textureId = nil;
+    }
   return result;
 }
 -(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.key ? self.key : [NSNull null]), @"key", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.useCache ? self.useCache : [NSNull null]), @"useCache", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId", (self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.key ? self.key : [NSNull null]), @"key", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.useCache ? self.useCache : [NSNull null]), @"useCache", nil];
 }
 @end
 

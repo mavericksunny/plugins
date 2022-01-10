@@ -256,6 +256,14 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
               ),
             ),
           ),
+          TextButton(
+              onPressed: () {
+                _controller.setNetworkDataSource(
+                  'https://s3.ap-south-1.amazonaws.com/curefit-content/video/vm/8c8f43ee-2c5b-4f53-a377-42d8d514a2c3.mp4',
+                  useCache: true,
+                );
+              },
+              child: Text('With remote mp4'))
         ],
       ),
     );
