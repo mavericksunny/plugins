@@ -595,6 +595,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 // trasparent frame for this situation
 - (CVPixelBufferRef)prevTransparentBuffer {
   if (_prevBuffer) {
+      CVPixelBufferRetain(_prevBuffer);
       CVPixelBufferLockBaseAddress(_prevBuffer, 0);
          size_t width = CVPixelBufferGetWidth(_prevBuffer);
          size_t height = CVPixelBufferGetHeight(_prevBuffer);

@@ -368,37 +368,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
     _textureId =
         (await _videoPlayerPlatform.create()) ?? kUninitializedTextureId;
-    //late DataSource dataSourceDescription;
-    // switch (dataSourceType) {
-    //   case DataSourceType.asset:
-    //     dataSourceDescription = DataSource(
-    //       sourceType: DataSourceType.asset,
-    //       asset: dataSource,
-    //       package: package,
-    //     );
-    //     break;
-    //   case DataSourceType.network:
-    //     dataSourceDescription = DataSource(
-    //       sourceType: DataSourceType.network,
-    //       uri: dataSource,
-    //       formatHint: formatHint,
-    //       useCache: useCache,
-    //       httpHeaders: httpHeaders,
-    //     );
-    //     break;
-    //   case DataSourceType.file:
-    //     dataSourceDescription = DataSource(
-    //       sourceType: DataSourceType.file,
-    //       uri: dataSource,
-    //     );
-    //     break;
-    //   case DataSourceType.contentUri:
-    //     dataSourceDescription = DataSource(
-    //       sourceType: DataSourceType.contentUri,
-    //       uri: dataSource,
-    //     );
-    //     break;
-    // }
 
     if (videoPlayerOptions?.mixWithOthers != null) {
       await _videoPlayerPlatform
