@@ -621,12 +621,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       return _prevBuffer;  }
   else {
         // AVPlayerItemVideoOutput.hasNewPixelBufferForItemTime doesn't work correctly
-          _failedCount++;
-          if (_failedCount > 100) {
-            _failedCount = 0;
-            [self removeVideoOutput];
-            [self addVideoOutput];
-          }
+//          _failedCount++;
+//          if (_failedCount > 100) {
+//            _failedCount = 0;
+//            [self removeVideoOutput];
+//            [self addVideoOutput];
+//          }
           return NULL;
       
   }
