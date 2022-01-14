@@ -618,9 +618,17 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   CMTime outputItemTime = [_videoOutput itemTimeForHostTime:CACurrentMediaTime()];
   if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
       _prevBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];
-        return [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];  }
+      return _prevBuffer;  }
   else {
-    return NULL;
+        // AVPlayerItemVideoOutput.hasNewPixelBufferForItemTime doesn't work correctly
+          _failedCount++;
+          if (_failedCount > 100) {
+            _failedCount = 0;
+            [self removeVideoOutput];
+            [self addVideoOutput];
+          }
+          return NULL;
+      
   }
 }
 
