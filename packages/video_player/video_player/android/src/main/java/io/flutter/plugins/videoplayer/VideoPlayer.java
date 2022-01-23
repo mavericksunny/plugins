@@ -91,33 +91,7 @@ final class VideoPlayer {
     this.options = options;
     this.maxCacheSize = maxCacheSize;
     this.maxCacheFileSize = maxCacheFileSize;
-
-//    Uri uri = Uri.parse(dataSource);
-//
-//    DataSource.Factory dataSourceFactory;
-//    if (isHTTP(uri)) {
-//      DefaultHttpDataSource.Factory httpDataSourceFactory =
-//          new DefaultHttpDataSource.Factory()
-//              .setUserAgent("ExoPlayer")
-//              .setAllowCrossProtocolRedirects(true);
-//
-//      if (httpHeaders != null && !httpHeaders.isEmpty()) {
-//        httpDataSourceFactory.setDefaultRequestProperties(httpHeaders);
-//      }
-//      dataSourceFactory = httpDataSourceFactory;
-//      if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
-//        dataSourceFactory =
-//            new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
-//      }
-//    } else {
-//      dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
-//    }
-
-    //TrackSelector trackSelector = new DefaultTrackSelector(context);
     exoPlayer = new SimpleExoPlayer.Builder(context).build();
-//    exoPlayer.setMediaSource(mediaSource);
-  //  exoPlayer.prepare();
-
     setupVideoPlayer(eventChannel, textureEntry);
   }
 

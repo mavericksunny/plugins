@@ -48,10 +48,6 @@
 
 
 - (instancetype)initWithFrameUpdater:(FLTFrameUpdater*)frameUpdater;
-//- (instancetype)initWithURL:(NSURL*)url
-//               frameUpdater:(FLTFrameUpdater*)frameUpdater
-//                enableCache:(BOOL)enableCache
-//                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers;
 - (void)play;
 - (void)pause;
 - (void)setIsLooping:(bool)isLooping;
@@ -283,54 +279,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   }
   return transform;
 }
-//
-//- (instancetype)initWithPlayerItem:(AVPlayerItem*)item frameUpdater:(FLTFrameUpdater*)frameUpdater {
-//  self = [super init];
-//  NSAssert(self, @"super init cannot be nil");
-//  _isInitialized = false;
-//  _isPlaying = false;
-//  _disposed = false;
-//
-//  AVAsset* asset = [item asset];
-//  void (^assetCompletionHandler)(void) = ^{
-//    if ([asset statusOfValueForKey:@"tracks" error:nil] == AVKeyValueStatusLoaded) {
-//      NSArray* tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-//      if ([tracks count] > 0) {
-//        AVAssetTrack* videoTrack = tracks[0];
-//        void (^trackCompletionHandler)(void) = ^{
-//          if (self->_disposed) return;
-//          if ([videoTrack statusOfValueForKey:@"preferredTransform"
-//                                        error:nil] == AVKeyValueStatusLoaded) {
-//            // Rotate the video by using a videoComposition and the preferredTransform
-//            self->_preferredTransform = [self fixTransform:videoTrack];
-//            // Note:
-//            // https://developer.apple.com/documentation/avfoundation/avplayeritem/1388818-videocomposition
-//            // Video composition can only be used with file-based media and is not supported for
-//            // use with media served using HTTP Live Streaming.
-//            AVMutableVideoComposition* videoComposition =
-//                [self getVideoCompositionWithTransform:self->_preferredTransform
-//                                             withAsset:asset
-//                                        withVideoTrack:videoTrack];
-//            item.videoComposition = videoComposition;
-//          }
-//        };
-//        [videoTrack loadValuesAsynchronouslyForKeys:@[ @"preferredTransform" ]
-//                                  completionHandler:trackCompletionHandler];
-//      }
-//    }
-//  };
-//
-//  _player = [AVPlayer playerWithPlayerItem:item];
-//  _player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
-//
-//  [self createVideoOutputAndDisplayLink:frameUpdater];
-//
-//  [self addObservers:item];
-//
-//  [asset loadValuesAsynchronouslyForKeys:@[ @"tracks" ] completionHandler:assetCompletionHandler];
-//
-//  return self;
-//}
 
 - (void)addVideoOutput {
   if (_player.currentItem == nil) {
@@ -620,39 +568,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       _prevBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];
       return _prevBuffer;  }
   else {
-        // AVPlayerItemVideoOutput.hasNewPixelBufferForItemTime doesn't work correctly
-//          _failedCount++;
-//          if (_failedCount > 100) {
-//            _failedCount = 0;
-//            [self removeVideoOutput];
-//            [self addVideoOutput];
-//          }
           return NULL;
-      
   }
 }
-
-//- (CVPixelBufferRef)copyPixelBuffer {
-//  if (!_videoOutput || !_isInitialized || !_isPlaying || !_key || ![_player currentItem] ||
-//      ![[_player currentItem] isPlaybackLikelyToKeepUp]) {
-//    return [self prevTransparentBuffer];
-//  }
-//  CMTime outputItemTime = [_videoOutput itemTimeForHostTime:CACurrentMediaTime()];
-//  if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
-//    _failedCount = 0;
-//    _prevBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];
-//    return _prevBuffer;
-//  } else {
-//    // AVPlayerItemVideoOutput.hasNewPixelBufferForItemTime doesn't work correctly
-//    _failedCount++;
-//    if (_failedCount > 100) {
-//      _failedCount = 0;
-//      [self removeVideoOutput];
-//      [self addVideoOutput];
-//    }
-//    return NULL;
-//  }
-//}
 
 - (void)onTextureUnregistered:(NSObject<FlutterTexture>*)texture {
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -777,32 +695,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 - (FLTTextureMessage*)create:(FLTCreateMessage*)input error:(FlutterError**)error {
   FLTFrameUpdater* frameUpdater = [[FLTFrameUpdater alloc] initWithRegistry:_registry];
     FLTVideoPlayer* player;
-//  if (input.asset) {
-//    NSString* assetPath;
-//    if (input.packageName) {
-//      assetPath = [_registrar lookupKeyForAsset:input.asset fromPackage:input.packageName];
-//    } else {
-//      assetPath = [_registrar lookupKeyForAsset:input.asset];
-//    }
-//    player = [[FLTVideoPlayer alloc] initWithFrameUpdater:frameUpdater];
-//    return [self onPlayerSetup:player frameUpdater:frameUpdater];
-//  } else if (input.uri) {
-//    BOOL useCache = input.useCache;
-//    BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
-//    if (enableCache) {
-////      NSString* escapedURL = [input.uri
-////          stringByAddingPercentEncodingWithAllowedCharacters:NSMutableCharacterSet
-////                                                                 .alphanumericCharacterSet];
-//        player = [[FLTVideoPlayer alloc] initWithFrameUpdater:frameUpdater];
-//
-//    } else {
-//    }
       player = [[FLTVideoPlayer alloc] initWithFrameUpdater:frameUpdater];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
-//  } else {
-//    *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
-//    return nil;
-//  }
 }
 
 - (void)dispose:(FLTTextureMessage*)input error:(FlutterError**)error {

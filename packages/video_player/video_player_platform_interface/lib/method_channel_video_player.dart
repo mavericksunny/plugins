@@ -32,24 +32,6 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   Future<int?> create() async {
     CreateMessage message = CreateMessage();
     message.useCache = true;
-    // switch (dataSource.sourceType) {
-    //   case DataSourceType.asset:
-    //     message.asset = dataSource.asset;
-    //     message.packageName = dataSource.package;
-    //     break;
-    //   case DataSourceType.network:
-    //     message.uri = dataSource.uri;
-    //     message.formatHint = _videoFormatStringMap[dataSource.formatHint];
-    //     message.useCache = dataSource.useCache;
-    //     message.httpHeaders = dataSource.httpHeaders;
-    //     break;
-    //   case DataSourceType.file:
-    //     message.uri = dataSource.uri;
-    //     break;
-    //   case DataSourceType.contentUri:
-    //     message.uri = dataSource.uri;
-    //     break;
-    // }
     TextureMessage response = await _api.create(message);
     return response.textureId;
   }
