@@ -217,10 +217,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _initialize();
   }
 
-  /// The URI to the video file. This will be in different formats depending on
-  /// the [DataSourceType] of the original video.
-  String? dataSource;
-
   /// HTTP headers used for the request to the [dataSource].
   /// Only for [VideoPlayerController.network].
   /// Always empty for other video types.
@@ -249,7 +245,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// This future will be awaited and the file will be loaded when
   /// [initialize()] is called.
 
-  DataSource? _dataSource;
+  DataSource? dataSource;
 
   final Future<ClosedCaptionFile>? closedCaptionFile;
 
@@ -311,7 +307,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
     if (!_creatingCompleter!.isCompleted) _creatingCompleter!.complete(null);
     void eventListener(VideoEvent event) {
-      if (_isDisposed || event.key != _dataSource?.key) {
+      if (_isDisposed || event.key != dataSource?.key) {
         return;
       }
 
@@ -449,7 +445,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       return;
     }
 
-    this._dataSource = dataSourceDescription;
+    this.dataSource = dataSourceDescription;
     value = VideoPlayerValue(
       duration: Duration.zero,
       size: Size.zero,
