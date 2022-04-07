@@ -256,6 +256,7 @@ final class VideoPlayer {
   void sendBufferingUpdate() {
     Map<String, Object> event = new HashMap<>();
     event.put("event", "bufferingUpdate");
+    event.put("key", key);
     List<? extends Number> range = Arrays.asList(0, exoPlayer.getBufferedPosition());
     // iOS supports a list of buffered ranges, so here is a list with a single range.
     event.put("values", Collections.singletonList(range));
