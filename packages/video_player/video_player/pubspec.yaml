@@ -25,8 +25,7 @@ dependencies:
 #    path: ../video_player_platform_interface
   # workaround for success build checks in PR
     git:
-      url: git@github.com:mavericksunny/plugins.git
-      ref: custom-video-reusable
+      url: https://github.com/mavericksunny/plugins.git
       path: packages/video_player/video_player_platform_interface
   # The design on https://flutter.dev/go/federated-plugins was to leave
   # this constraint as "any". We cannot do it right now as it fails pub publish
@@ -37,8 +36,7 @@ dependencies:
 #    path: ../video_player_web
     # workaround for success build checks in PR
     git:
-      url: git@github.com:mavericksunny/plugins.git
-      ref: custom-video-reusable
+      url: https://github.com/mavericksunny/plugins.git
       path: packages/video_player/video_player_web
 
   flutter:
