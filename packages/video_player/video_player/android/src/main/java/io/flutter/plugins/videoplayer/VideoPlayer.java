@@ -12,8 +12,10 @@ import android.net.Uri;
 import android.view.Surface;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.Listener;
@@ -33,7 +35,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.FileDataSource;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSink;
@@ -59,7 +60,7 @@ final class VideoPlayer {
   private static final String FORMAT_HLS = "hls";
   private static final String FORMAT_OTHER = "other";
 
-  private SimpleExoPlayer exoPlayer;
+  private ExoPlayer exoPlayer;
 
   private Surface surface;
 
@@ -94,7 +95,7 @@ final class VideoPlayer {
     this.options = options;
     this.maxCacheSize = maxCacheSize;
     this.maxCacheFileSize = maxCacheFileSize;
-    exoPlayer = new SimpleExoPlayer.Builder(context).build();
+    exoPlayer = new ExoPlayer.Builder(context).build();
     setupVideoPlayer(eventChannel, textureEntry);
   }
 
@@ -248,7 +249,7 @@ final class VideoPlayer {
           }
 
           @Override
-          public void onPlayerError(final ExoPlaybackException error) {
+          public void onPlayerError(final PlaybackException error) {
             setBuffering(false);
             if (eventSink != null) {
               eventSink.error("VideoError", "Video player had error " + error, null);
@@ -268,7 +269,7 @@ final class VideoPlayer {
   }
 
   @SuppressWarnings("deprecation")
-  private static void setAudioAttributes(SimpleExoPlayer exoPlayer, boolean isMixMode) {
+  private static void setAudioAttributes(ExoPlayer exoPlayer, boolean isMixMode) {
     exoPlayer.setAudioAttributes(
         new AudioAttributes.Builder().setContentType(C.CONTENT_TYPE_MOVIE).build(), !isMixMode);
   }
