@@ -19,6 +19,7 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.Listener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioAttributes;
+import com.google.android.exoplayer2.database.StandaloneDatabaseProvider;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
@@ -31,6 +32,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.FileDataSource;
@@ -125,7 +127,7 @@ final class VideoPlayer {
                 new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
       }
     }else {
-      dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
+      dataSourceFactory = new DefaultDataSource.Factory(context);
     }
       MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
       exoPlayer.setMediaSource(mediaSource);
@@ -169,12 +171,12 @@ final class VideoPlayer {
       case C.TYPE_SS:
         return new SsMediaSource.Factory(
                 new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
-                new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
+                new DefaultDataSource.Factory(context, mediaDataSourceFactory))
             .createMediaSource(MediaItem.fromUri(uri));
       case C.TYPE_DASH:
         return new DashMediaSource.Factory(
                 new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
-                new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
+                new DefaultDataSource.Factory(context, mediaDataSourceFactory))
             .createMediaSource(MediaItem.fromUri(uri));
       case C.TYPE_HLS:
         HlsMediaSource hlsMediaSource = new HlsMediaSource.Factory(mediaDataSourceFactory)
@@ -345,7 +347,7 @@ final class VideoPlayer {
 
   static class CacheDataSourceFactory implements DataSource.Factory {
     private final Context context;
-    private final DefaultDataSourceFactory defaultDatasourceFactory;
+    private final DataSource.Factory defaultDatasourceFactory;
     private final long maxFileSize, maxCacheSize;
     private static SimpleCache downloadCache;
 
@@ -358,16 +360,17 @@ final class VideoPlayer {
       this.context = context;
       this.maxCacheSize = maxCacheSize;
       this.maxFileSize = maxFileSize;
-      DefaultBandwidthMeter bandwidthMeter =  new DefaultBandwidthMeter.Builder(this.context).build();
+//      DefaultBandwidthMeter bandwidthMeter =  new DefaultBandwidthMeter.Builder(this.context).build();
       defaultDatasourceFactory =
-          new DefaultDataSourceFactory(this.context, bandwidthMeter, upstreamDataSource);
+          new DefaultDataSource.Factory(this.context, upstreamDataSource);
+
     }
 
     @Override
     public DataSource createDataSource() {
       LeastRecentlyUsedCacheEvictor evictor = new LeastRecentlyUsedCacheEvictor(maxCacheSize);
 
-      ExoDatabaseProvider exoDatabaseProvider = new ExoDatabaseProvider(this.context);
+      StandaloneDatabaseProvider exoDatabaseProvider = new StandaloneDatabaseProvider(this.context);
 
       if (downloadCache == null) {
         downloadCache = new SimpleCache(new File(context.getCacheDir(), "video"), evictor, exoDatabaseProvider);
