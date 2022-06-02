@@ -25,7 +25,7 @@ dependencies:
     git:
       url: https://github.com/mavericksunny/plugins.git
       path: packages/video_player/video_player_platform_interface
-      ref: 22b5bd522c970cb5fdb3bc1cdb8f86d60748732c
+      ref: 0c8412e393d3a5273e60e028118b07fb97c2d981
 
   flutter:
     sdk: flutter
