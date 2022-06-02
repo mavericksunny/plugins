@@ -784,7 +784,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       }
         [player setDataSourceAsset:assetPath withKey:input.key];
     } else if (input.uri) {
-      BOOL useCache = input.useCache;
+      BOOL useCache = [input.useCache boolValue];
       BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
         if (enableCache) {
             [player setDataSourceURL:[NSURL URLWithString:input.uri]
