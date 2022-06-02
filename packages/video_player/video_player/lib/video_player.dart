@@ -436,6 +436,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       DataSource(
         sourceType: DataSourceType.file,
         uri: 'file://${file.path}',
+        useCache: false
       ),
     );
   }
