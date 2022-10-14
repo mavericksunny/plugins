@@ -1,4 +1,4 @@
-name: video_player
+name: video_player_cf
 description: Flutter plugin for displaying inline video with other Flutter
   widgets on Android, iOS, and web.
 repository: https://github.com/flutter/plugins/tree/master/packages/video_player/video_player
