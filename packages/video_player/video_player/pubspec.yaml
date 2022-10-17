@@ -25,6 +25,7 @@ dependencies:
 #    path: ../video_player_platform_interface
   # workaround for success build checks in PR
     git:
+      ref: e1830f5cb4fb3aee289d88f5c48d04fe6fac94b7
       url: git@github.com:curefit/flutter-plugins.git
       path: packages/video_player/video_player_platform_interface
   # The design on https://flutter.dev/go/federated-plugins was to leave
