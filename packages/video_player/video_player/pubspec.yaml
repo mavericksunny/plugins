@@ -21,7 +21,7 @@ flutter:
         default_package: video_player_web
 
 dependencies:
-  video_player_platform_interface: #^2.3.0
+  video_player_platform_interface_cf: #^2.3.0
 #    path: ../video_player_platform_interface
   # workaround for success build checks in PR
     git:
