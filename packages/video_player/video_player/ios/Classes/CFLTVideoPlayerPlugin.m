@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "FLTVideoPlayerPlugin.h"
+#import "CFLTVideoPlayerPlugin.h"
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
 #import "VIMediaCache.h"
@@ -12,14 +12,14 @@
 #error Code Requires ARC.
 #endif
 
-@interface FLTFrameUpdater : NSObject
+@interface CFLTFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
 @property(nonatomic, weak, readonly) NSObject<FlutterTextureRegistry>* registry;
 - (void)onDisplayLink:(CADisplayLink*)link;
 @end
 
-@implementation FLTFrameUpdater
-- (FLTFrameUpdater*)initWithRegistry:(NSObject<FlutterTextureRegistry>*)registry {
+@implementation CFLTFrameUpdater
+- (CFLTFrameUpdater*)initWithRegistry:(NSObject<FlutterTextureRegistry>*)registry {
   NSAssert(self, @"super init cannot be nil");
   if (self == nil) return nil;
   _registry = registry;
@@ -47,7 +47,7 @@
 @property(nonatomic, readonly) int failedCount;
 
 
-- (instancetype)initWithFrameUpdater:(FLTFrameUpdater*)frameUpdater;
+- (instancetype)initWithFrameUpdater:(CFLTFrameUpdater*)frameUpdater;
 - (void)play;
 - (void)pause;
 - (void)setIsLooping:(bool)isLooping;
@@ -65,7 +65,7 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
 
 @implementation FLTVideoPlayer
 
-- (instancetype)initWithFrameUpdater:(FLTFrameUpdater*)frameUpdater {
+- (instancetype)initWithFrameUpdater:(CFLTFrameUpdater*)frameUpdater {
   self = [super init];
   NSAssert(self, @"super init cannot be nil");
   _isInitialized = false;
@@ -182,7 +182,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   return videoComposition;
 }
 
-- (void)createVideoOutputAndDisplayLink:(FLTFrameUpdater*)frameUpdater {
+- (void)createVideoOutputAndDisplayLink:(CFLTFrameUpdater*)frameUpdater {
   NSDictionary* pixBuffAttributes = @{
     (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA),
     (id)kCVPixelBufferIOSurfacePropertiesKey : @{}
@@ -625,7 +625,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 @end
 
-@interface FLTVideoPlayerPlugin () <FLTVideoPlayerApi>
+@interface CFLTVideoPlayerPlugin () <FLTVideoPlayerApi>
 @property(readonly, weak, nonatomic) NSObject<FlutterTextureRegistry>* registry;
 @property(readonly, weak, nonatomic) NSObject<FlutterBinaryMessenger>* messenger;
 @property(readonly, strong, nonatomic) NSMutableDictionary* players;
@@ -634,9 +634,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 @property(readonly, nonatomic) long maxCacheFileSize;
 @end
 
-@implementation FLTVideoPlayerPlugin
+@implementation CFLTVideoPlayerPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FLTVideoPlayerPlugin* instance = [[FLTVideoPlayerPlugin alloc] initWithRegistrar:registrar];
+  CFLTVideoPlayerPlugin* instance = [[CFLTVideoPlayerPlugin alloc] initWithRegistrar:registrar];
   [registrar publish:instance];
   FLTVideoPlayerApiSetup(registrar.messenger, instance);
 }
@@ -664,7 +664,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (FLTTextureMessage*)onPlayerSetup:(FLTVideoPlayer*)player
-                       frameUpdater:(FLTFrameUpdater*)frameUpdater {
+                       frameUpdater:(CFLTFrameUpdater*)frameUpdater {
   int64_t textureId = [_registry registerTexture:player];
   frameUpdater.textureId = textureId;
   FlutterEventChannel* eventChannel = [FlutterEventChannel
@@ -693,7 +693,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (FLTTextureMessage*)create:(FLTCreateMessage*)input error:(FlutterError**)error {
-  FLTFrameUpdater* frameUpdater = [[FLTFrameUpdater alloc] initWithRegistry:_registry];
+  CFLTFrameUpdater* frameUpdater = [[CFLTFrameUpdater alloc] initWithRegistry:_registry];
     FLTVideoPlayer* player;
       player = [[FLTVideoPlayer alloc] initWithFrameUpdater:frameUpdater];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];

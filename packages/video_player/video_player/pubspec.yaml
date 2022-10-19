@@ -16,7 +16,7 @@ flutter:
         package: io.flutter.plugins.videoplayer
         pluginClass: VideoPlayerPlugin
       ios:
-        pluginClass: FLTVideoPlayerPlugin
+        pluginClass: CFLTVideoPlayerPlugin
       web:
         default_package: video_player_web
 
