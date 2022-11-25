@@ -31,7 +31,7 @@
 }
 @end
 
-@interface FLTVideoPlayer : NSObject <FlutterTexture, FlutterStreamHandler>
+@interface CFLTVideoPlayer : NSObject <FlutterTexture, FlutterStreamHandler>
 @property(readonly, nonatomic) AVPlayer* player;
 @property(readonly, nonatomic) AVPlayerItemVideoOutput* videoOutput;
 @property(readonly, nonatomic) CADisplayLink* displayLink;
@@ -63,7 +63,7 @@ static void* playbackLikelyToKeepUpContext = &playbackLikelyToKeepUpContext;
 static void* playbackBufferEmptyContext = &playbackBufferEmptyContext;
 static void* playbackBufferFullContext = &playbackBufferFullContext;
 
-@implementation FLTVideoPlayer
+@implementation CFLTVideoPlayer
 
 - (instancetype)initWithFrameUpdater:(CFLTFrameUpdater*)frameUpdater {
   self = [super init];
@@ -130,7 +130,7 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
 
 const int64_t TIME_UNSET = -9223372036854775807;
 
-static inline int64_t FLTCMTimeToMillis(CMTime time) {
+static inline int64_t CFLTCMTimeToMillis(CMTime time) {
   // When CMTIME_IS_INDEFINITE return a value that matches TIME_UNSET from ExoPlayer2 on Android.
   // Fixes https://github.com/flutter/flutter/issues/48670
   if (CMTIME_IS_INDEFINITE(time)) return TIME_UNSET;
@@ -346,8 +346,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       NSMutableArray<NSArray<NSNumber*>*>* values = [[NSMutableArray alloc] init];
       for (NSValue* rangeValue in [object loadedTimeRanges]) {
         CMTimeRange range = [rangeValue CMTimeRangeValue];
-        int64_t start = FLTCMTimeToMillis(range.start);
-        [values addObject:@[ @(start), @(start + FLTCMTimeToMillis(range.duration)) ]];
+        int64_t start = CFLTCMTimeToMillis(range.start);
+        [values addObject:@[ @(start), @(start + CFLTCMTimeToMillis(range.duration)) ]];
       }
       _eventSink(@{@"event" : @"bufferingUpdate", @"values" : values, @"key" : _key});
     }
@@ -481,11 +481,11 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (int64_t)position {
-  return FLTCMTimeToMillis([_player currentTime]);
+  return CFLTCMTimeToMillis([_player currentTime]);
 }
 
 - (int64_t)duration {
-  return FLTCMTimeToMillis([[_player currentItem] duration]);
+  return CFLTCMTimeToMillis([[_player currentItem] duration]);
 }
 
 - (void)seekTo:(int)location {
@@ -625,7 +625,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 @end
 
-@interface CFLTVideoPlayerPlugin () <FLTVideoPlayerApi>
+@interface CFLTVideoPlayerPlugin () <CFLTVideoPlayerApi>
 @property(readonly, weak, nonatomic) NSObject<FlutterTextureRegistry>* registry;
 @property(readonly, weak, nonatomic) NSObject<FlutterBinaryMessenger>* messenger;
 @property(readonly, strong, nonatomic) NSMutableDictionary* players;
@@ -638,7 +638,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   CFLTVideoPlayerPlugin* instance = [[CFLTVideoPlayerPlugin alloc] initWithRegistrar:registrar];
   [registrar publish:instance];
-  FLTVideoPlayerApiSetup(registrar.messenger, instance);
+  CFLTVideoPlayerApiSetup(registrar.messenger, instance);
 }
 
 - (instancetype)initWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -653,17 +653,17 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)detachFromEngineForRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   for (NSNumber* textureId in _players.allKeys) {
-    FLTVideoPlayer* player = _players[textureId];
+    CFLTVideoPlayer* player = _players[textureId];
     [player disposeSansEventChannel];
   }
   [_players removeAllObjects];
   // TODO(57151): This should be commented out when 57151's fix lands on stable.
   // This is the correct behavior we never did it in the past and the engine
   // doesn't currently support it.
-  // FLTVideoPlayerApiSetup(registrar.messenger, nil);
+  // CFLTVideoPlayerApiSetup(registrar.messenger, nil);
 }
 
-- (FLTTextureMessage*)onPlayerSetup:(FLTVideoPlayer*)player
+- (CFLTTextureMessage*)onPlayerSetup:(CFLTVideoPlayer*)player
                        frameUpdater:(CFLTFrameUpdater*)frameUpdater {
   int64_t textureId = [_registry registerTexture:player];
   frameUpdater.textureId = textureId;
@@ -674,12 +674,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   [eventChannel setStreamHandler:player];
   player.eventChannel = eventChannel;
   _players[@(textureId)] = player;
-  FLTTextureMessage* result = [[FLTTextureMessage alloc] init];
+  CFLTTextureMessage* result = [[CFLTTextureMessage alloc] init];
   result.textureId = @(textureId);
   return result;
 }
 
-- (void)initialize:(FLTInitializeMessage*)input error:(FlutterError**)error {
+- (void)initialize:(CFLTInitializeMessage*)input error:(FlutterError**)error {
   // Allow audio playback when the Ring/Silent switch is set to silent
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
 
@@ -692,15 +692,15 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   _maxCacheFileSize = [input.maxCacheFileSize longValue];
 }
 
-- (FLTTextureMessage*)create:(FLTCreateMessage*)input error:(FlutterError**)error {
+- (CFLTTextureMessage*)create:(CFLTCreateMessage*)input error:(FlutterError**)error {
   CFLTFrameUpdater* frameUpdater = [[CFLTFrameUpdater alloc] initWithRegistry:_registry];
-    FLTVideoPlayer* player;
-      player = [[FLTVideoPlayer alloc] initWithFrameUpdater:frameUpdater];
+    CFLTVideoPlayer* player;
+      player = [[CFLTVideoPlayer alloc] initWithFrameUpdater:frameUpdater];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
 }
 
-- (void)dispose:(FLTTextureMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
+- (void)dispose:(CFLTTextureMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
   [_registry unregisterTexture:input.textureId.intValue];
   [_players removeObjectForKey:input.textureId];
   // If the Flutter contains https://github.com/flutter/engine/pull/12695,
@@ -721,45 +721,45 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
                  });
 }
 
-- (void)setLooping:(FLTLoopingMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
+- (void)setLooping:(CFLTLoopingMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
   [player setIsLooping:[input.isLooping boolValue]];
 }
 
-- (void)setVolume:(FLTVolumeMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
+- (void)setVolume:(CFLTVolumeMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
   [player setVolume:[input.volume doubleValue]];
 }
 
-- (void)setPlaybackSpeed:(FLTPlaybackSpeedMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
+- (void)setPlaybackSpeed:(CFLTPlaybackSpeedMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
   [player setPlaybackSpeed:[input.speed doubleValue]];
 }
 
-- (void)play:(FLTTextureMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
+- (void)play:(CFLTTextureMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
   [player play];
 }
 
-- (FLTPositionMessage*)position:(FLTTextureMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
-  FLTPositionMessage* result = [[FLTPositionMessage alloc] init];
+- (CFLTPositionMessage*)position:(CFLTTextureMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
+  CFLTPositionMessage* result = [[CFLTPositionMessage alloc] init];
   result.position = @([player position]);
   return result;
 }
 
-- (void)seekTo:(FLTPositionMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
+- (void)seekTo:(CFLTPositionMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
   [player seekTo:[input.position intValue]];
   [_registry textureFrameAvailable:input.textureId.intValue];
 }
 
-- (void)pause:(FLTTextureMessage*)input error:(FlutterError**)error {
-  FLTVideoPlayer* player = _players[input.textureId];
+- (void)pause:(CFLTTextureMessage*)input error:(FlutterError**)error {
+  CFLTVideoPlayer* player = _players[input.textureId];
   [player pause];
 }
 
-- (void)setMixWithOthers:(FLTMixWithOthersMessage*)input
+- (void)setMixWithOthers:(CFLTMixWithOthersMessage*)input
                    error:(FlutterError* _Nullable __autoreleasing*)error {
   if ([input.mixWithOthers boolValue]) {
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback
@@ -770,8 +770,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   }
 }
 
-- (void)setDataSource:(nonnull FLTDataSourceMessage *)input error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-    FLTVideoPlayer* player = _players[input.textureId];
+- (void)setDataSource:(nonnull CFLTDataSourceMessage *)input error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+    CFLTVideoPlayer* player = _players[input.textureId];
     [player clear];
     // This call will clear cached frame because we will return transparent frame
     [_registry textureFrameAvailable:[input.textureId intValue]];
@@ -789,7 +789,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         if (enableCache) {
             [player setDataSourceURL:[NSURL URLWithString:input.uri]
                                            withKey:input.key
-                         withResourceLoaderManager:[FLTVideoPlayer resourceLoaderManager]];
+                         withResourceLoaderManager:[CFLTVideoPlayer resourceLoaderManager]];
         } else {
             [player setDataSourceURL:[NSURL URLWithString:input.uri] withKey:input.key];
         }
