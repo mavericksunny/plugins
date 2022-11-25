@@ -16,7 +16,7 @@ dependencies:
   url_launcher: ^6.0.10
   video_player_cf:
     git:
-      ref: 58ca4fe8f398afb8bb7929679a83639163d50c78
+      ref: 4efea3d03031331348df55032bf15cd5b81c24d2
       url: git@github.com:curefit/flutter-plugins.git
       path: packages/video_player/video_player
 
