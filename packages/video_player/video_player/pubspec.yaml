@@ -13,7 +13,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: io.flutter.plugins.videoplayer
+        package: io.flutter.plugins.videoplayercf
         pluginClass: VideoPlayerPlugin
       ios:
         pluginClass: CFLTVideoPlayerPlugin
